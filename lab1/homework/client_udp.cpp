@@ -38,7 +38,7 @@ in_addr_t neighbour_ip;
 uint16_t neighbour_port;
 int has_token = 0;
 
-int listening_socket_fd;
+int socket_fd;
 int logging_socket_fd;
 struct sockaddr_in logger_address;
 
@@ -76,54 +76,53 @@ void send_log_message(string message) {
     }
 }
 
-int connect_to_neighbour() {
-    // utworzenie socketa do polaczenia z sasiadem
-    int neighbour_conection_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(neighbour_conection_socket_fd == -1) {
+void initialize_socket() {
+    // stworzenie socketu
+    socket_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if(socket_fd == -1) { 
         perror("blad przy tworzeniu socketu");
+        exit(1); 
+    } 
+      
+    // wypelnienie adresu do nasluchiwania 
+    struct sockaddr_in listening_address;
+    listening_address.sin_family = AF_INET;
+    listening_address.sin_addr.s_addr = htonl(INADDR_ANY); //TODO
+    listening_address.sin_port = listening_port; 
+      
+    // bindowanie socketa do adresu
+    if(bind(socket_fd, (struct sockaddr *) &listening_address, sizeof(listening_address)) != 0) {
+        perror("blad przy bindowaniu socketu do adresu");
         exit(1);
     }
+}
 
-    // wypelnienie adresu sasiada
+struct sockaddr_in get_neighbour_address() {
     struct sockaddr_in neighbour_address;
     neighbour_address.sin_family = AF_INET;
     neighbour_address.sin_addr.s_addr = neighbour_ip;
     neighbour_address.sin_port = neighbour_port;
-
-    // polaczenie z sasiadem
-    if(connect(neighbour_conection_socket_fd, (struct sockaddr *) &neighbour_address, sizeof(neighbour_address)) != 0) {
-        perror("blad przy laczeniu sie do serwera");
-        exit(1);
-    }
-
-    return neighbour_conection_socket_fd;
-}
-
-void close_connection_with_neighbour(int neighbour_conection_socket_fd) {
-    if(close(neighbour_conection_socket_fd) == -1) {
-        perror("blad przy zamykaniu socketu polaczenia z sasiadem");
-        exit(1);
-    }
+    return neighbour_address;
 }
 
 void join_the_ring() {
-    int neighbour_conection_socket_fd = connect_to_neighbour();
-
     // utworzenie wiadomosci oznajmujacej dolaczenie do ringu
     token * join_message = (token *) malloc(sizeof(token));
     join_message -> type = JOIN_RING_MESSAGE;
     join_message -> ip = listening_ip;
     join_message -> port = listening_port;
 
-    // wyslanie wiadomosci
-    if(write(neighbour_conection_socket_fd, join_message, sizeof(token)) == -1) {
+    struct sockaddr_in neighbour_address = get_neighbour_address();
+    socklen_t address_length = sizeof(neighbour_address);
+
+    if(sendto(socket_fd, join_message, sizeof(token), 0, (struct sockaddr *) &neighbour_address, address_length) == -1) {
         perror("blad przy wysylaniu wiadomosci");
         exit(1);
-    }    
+    }
 
     // odebranie odpowiedzi zwrotnej
     token * response = (token *) malloc(sizeof(token));
-    if(read(neighbour_conection_socket_fd, response, sizeof(token)) == -1) {
+    if(recvfrom(socket_fd, response, sizeof(token), 0, (struct sockaddr *) &neighbour_address, &address_length) == -1) {
         perror("blad przy czytaniu wiadomosci");
         exit(1);
     }
@@ -131,55 +130,50 @@ void join_the_ring() {
     neighbour_ip = response -> ip;
     neighbour_port = response -> port;
 
-    // zamkniecie polaczenia z sasiadem
-    close_connection_with_neighbour(neighbour_conection_socket_fd);
-
     // wyslanie loga
     send_log_message("poprawnie dolaczylem do pierscienia");             
 }
 
 void pass_token(token * message) {
-    int neighbour_conection_socket_fd = connect_to_neighbour();
-
-    if(write(neighbour_conection_socket_fd, message, sizeof(token)) == -1) {
+    struct sockaddr_in neighbour_address = get_neighbour_address();
+    
+    if(sendto(socket_fd, message, sizeof(token), 0, (struct sockaddr *) &neighbour_address, sizeof(neighbour_address)) == -1) {
         perror("blad przy wysylaniu wiadomosci");
         exit(1);
-    }     
-    close_connection_with_neighbour(neighbour_conection_socket_fd);
+    }
+
 }
 
 void send_accept_token(string receiver_id) {
-    int neighbour_conection_socket_fd = connect_to_neighbour();
+    struct sockaddr_in neighbour_address = get_neighbour_address();
 
     // utworzenie wiadomosci akceptujacej
     token * accept_message = (token *) malloc(sizeof(token));
     accept_message -> type = ACCEPT_MESSAGE;
     rewrite_string_to_char_table(receiver_id, accept_message -> receiver_id, MAX_ID_SIZE);
 
-    if(write(neighbour_conection_socket_fd, accept_message, sizeof(token)) == -1) {
+    if(sendto(socket_fd, accept_message, sizeof(token), 0, (struct sockaddr *) &neighbour_address, sizeof(neighbour_address)) == -1) {
         perror("blad przy wysylaniu wiadomosci");
         exit(1);
-    }   
-    close_connection_with_neighbour(neighbour_conection_socket_fd);
+    }
 }
 
 void send_new_token_without_data() {
-    int neighbour_conection_socket_fd = connect_to_neighbour();
+    struct sockaddr_in neighbour_address = get_neighbour_address();
 
     // utworzenie pustej wiadomosci
     token * empty_message = (token *) malloc(sizeof(token));
     empty_message -> type = TOKEN_MESSAGE;
     empty_message -> occupied = 0;
 
-    if(write(neighbour_conection_socket_fd, empty_message, sizeof(token)) == -1) {
+    if(sendto(socket_fd, empty_message, sizeof(token), 0, (struct sockaddr *) &neighbour_address, sizeof(neighbour_address)) == -1) {
         perror("blad przy wysylaniu wiadomosci");
         exit(1);
-    }    
-    close_connection_with_neighbour(neighbour_conection_socket_fd);
+    }
 }
 
 void send_new_token_with_data() {
-    int neighbour_conection_socket_fd = connect_to_neighbour();
+    struct sockaddr_in neighbour_address = get_neighbour_address();
 
     // utworzenie wiadomosci z trescia
     token * new_message = (token *) malloc(sizeof(token));
@@ -189,15 +183,14 @@ void send_new_token_with_data() {
     rewrite_string_to_char_table(receiver_of_a_message, new_message -> receiver_id, MAX_ID_SIZE);
     rewrite_string_to_char_table(client_id, new_message -> sender_id, MAX_ID_SIZE);
 
-    if(write(neighbour_conection_socket_fd, new_message, sizeof(token)) == -1) {
+    if(sendto(socket_fd, new_message, sizeof(token), 0, (struct sockaddr *) &neighbour_address, sizeof(neighbour_address)) == -1) {
         perror("blad przy wysylaniu wiadomosci");
         exit(1);
-    }    
-    close_connection_with_neighbour(neighbour_conection_socket_fd);
+    }
     data_to_send = 0;
 }
 
-void connect_with_new_client(int connection_fd, token * message) {
+void connect_with_new_client(struct sockaddr_in sender_address, token * message) {
     // utworzenie odpowiedzi zawierajacej ip i port na ktory dotychczas sie wysylalo
     token * response = (token *) malloc(sizeof(token));
     response -> type = RESPONSE_MESSAGE;
@@ -208,10 +201,10 @@ void connect_with_new_client(int connection_fd, token * message) {
     neighbour_ip = message -> ip;
     neighbour_port = message -> port;
 
-    if(write(connection_fd, response, sizeof(token)) == -1) {
+    if(sendto(socket_fd, response, sizeof(token), 0, (struct sockaddr *) &sender_address, sizeof(sender_address)) == -1){
         perror("blad przy wysylaniu wiadomosci");
         exit(1);
-    }            
+    }
 
     send_log_message("dodalem nowego klienta do pierscienia");             
 
@@ -224,111 +217,70 @@ void connect_with_new_client(int connection_fd, token * message) {
     }
 }
 
-void handle_new_connection(int connection_fd) {
-    token * message = (token *) malloc(sizeof(token));
-    if(read(connection_fd, message, sizeof(token)) == -1) {
-        perror("blad przy czytaniu wiadomosci");
-        exit(1);
-    }
-    
-    if(message -> type == JOIN_RING_MESSAGE) {
-        connect_with_new_client(connection_fd, message);
-    }
-    if(message -> type == TOKEN_MESSAGE) {
-        // przetrzymanie tokena przez sekunde
-        sleep(1);
+void listen_for_messages() {
+    // nasluchiwanie na polaczenie w nieskonczonej petli
+    while(1) {
 
-        if(message -> occupied == 0) {
-            // jesli token byl pusty to wysylamy dane jesli takie mamy lub pusty token
-            if(data_to_send == 1) {
-                send_log_message("otrzymalem pusty token, przesylam token z wiadomoscia");
-                send_new_token_with_data();
+        token * message = (token *) malloc(sizeof(token));
+        struct sockaddr_in sender_address;
+        socklen_t address_length = sizeof(sender_address);
+
+        if(recvfrom(socket_fd, message, sizeof(token), 0, (struct sockaddr *) &sender_address, &address_length) == -1) {
+            perror("blad przy czytaniu wiadomosci");
+            exit(1);
+        }
+        
+        if(message -> type == JOIN_RING_MESSAGE) {
+            connect_with_new_client(sender_address, message);
+        }
+        if(message -> type == TOKEN_MESSAGE) {
+            // przetrzymanie tokena przez sekunde
+            sleep(1);
+
+            if(message -> occupied == 0) {
+                // jesli token byl pusty to wysylamy dane jesli takie mamy lub pusty token
+                if(data_to_send == 1) {
+                    send_log_message("otrzymalem pusty token, przesylam token z wiadomoscia");
+                    send_new_token_with_data();
+                }
+                else {
+                    send_log_message("otrzymalem pusty token, przesylam pusty token");
+                    send_new_token_without_data();
+                }
             }
             else {
-                send_log_message("otrzymalem pusty token, przesylam pusty token");
-                send_new_token_without_data();
+                // jesli token byl pelny to sprawdzamy czy wiadomosc jest do nas, lub od nas, jesli nie przekazujemy dalej
+                if(strcmp(message -> receiver_id, client_id) == 0) {
+                    printf("    OTRZYMALEM WIADOMOSC:\n\tod: %s\n\ttresc: %s\n", message -> sender_id, message -> message);   
+                    send_log_message("otrzymalem token z wiadomoscia dla mnie, przesylam token potwierdzajacy otrzymanie wiadomosci");             
+                    send_accept_token(message -> sender_id);
+                }
+                else if(strcmp(message -> sender_id, client_id) == 0) {
+                    printf("    NIE UDALO SIE DOSTARCZYC WIADOMOSCI DO: \'%s\' (%s)\n", message -> receiver_id, message -> message);
+                    send_log_message("otrzymalem token ktory sam wyslalem (nie udalo sie dostarczyc wiadomosci), przesylam pusty token");
+                    send_new_token_without_data();
+                }
+                else {
+                    send_log_message("otrzymalem zajety token nie zwiazany ze mna, przekazuje token dalej");                        
+                    pass_token(message);
+                }
             }
         }
-        else {
-            // jesli token byl pelny to sprawdzamy czy wiadomosc jest do nas, lub od nas, jesli nie przekazujemy dalej
+        if(message -> type == ACCEPT_MESSAGE) {
+            sleep(1);
+
+            // jesli dostaniemy wiadomosc akceptujaca do nas to przekazujemy pusty token - zapobiega glodzeniu
             if(strcmp(message -> receiver_id, client_id) == 0) {
-                printf("    OTRZYMALEM WIADOMOSC:\n\tod: %s\n\ttresc: %s\n", message -> sender_id, message -> message);   
-                send_log_message("otrzymalem token z wiadomoscia dla mnie, przesylam token potwierdzajacy otrzymanie wiadomosci");             
-                send_accept_token(message -> sender_id);
-            }
-            else if(strcmp(message -> sender_id, client_id) == 0) {
-                printf("    NIE UDALO SIE DOSTARCZYC WIADOMOSCI DO: \'%s\' (%s)\n", message -> receiver_id, message -> message);
-                send_log_message("otrzymalem token ktory sam wyslalem (nie udalo sie dostarczyc wiadomosci), przesylam pusty token");
-                send_new_token_without_data();
+                send_log_message("otrzymalem token akceptujacy odebranie mojej wiadomosci, przesylam pusty token");
+                send_new_token_without_data();             
             }
             else {
-                send_log_message("otrzymalem zajety token nie zwiazany ze mna, przekazuje token dalej");                        
+                send_log_message("otrzymalem token akceptujacy nie zwiazany ze mna, przekazuje token dalej");             
                 pass_token(message);
             }
         }
     }
-    if(message -> type == ACCEPT_MESSAGE) {
-        sleep(1);
-
-        // jesli dostaniemy wiadomosc akceptujaca do nas to przekazujemy pusty token - zapobiega glodzeniu
-        if(strcmp(message -> receiver_id, client_id) == 0) {
-            send_log_message("otrzymalem token akceptujacy odebranie mojej wiadomosci, przesylam pusty token");
-            send_new_token_without_data();             
-        }
-        else {
-            send_log_message("otrzymalem token akceptujacy nie zwiazany ze mna, przekazuje token dalej");             
-            pass_token(message);
-        }
-    }
-
 }
-
-void listen_for_connection() {
-    // utworzenie socketa do nasluchiwania
-    listening_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listening_socket_fd == -1) {
-        perror("blad przy tworzeniu socketu");
-        exit(1);
-    }
-
-    // wypelnienie adresu do nasluchiwania
-    struct sockaddr_in listening_address;
-    listening_address.sin_family = AF_INET;
-    listening_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    listening_address.sin_port = listening_port;
-
-    // bindowanie socketa do adresu
-    if(bind(listening_socket_fd, (struct sockaddr *) &listening_address, sizeof(listening_address)) != 0) {
-        perror("blad przy bindowaniu socketu do adresu");
-        exit(1);
-    }
-
-    // nasluchiwanie na polaczenie w nieskonczonej petli
-    while(1) {
-        if(listen(listening_socket_fd, 5) != 0) {
-            perror("blad przy nasluchiwaniu na polaczenie");
-            exit(1);
-        }
-
-        // akceptowanie polaczenia
-        struct sockaddr_in new_connection_address;
-        socklen_t address_length = sizeof(new_connection_address);
-        int connection_fd = accept(listening_socket_fd, (struct sockaddr *)  &new_connection_address, &address_length);
-        if(connection_fd == -1) {
-            perror("blad przy akceptowaniu polaczenia");
-            exit(1);
-        }
-
-        handle_new_connection(connection_fd);
-
-        // zamkniecie obsluzonego polaczenia
-        if(close(connection_fd) == -1) {
-            perror("blad przy zamykaniu socketu");
-            exit(1);
-        }
-    }
-}
-
 
 void * chat_thread_fun(void * arg){
     sleep(3);
@@ -388,7 +340,7 @@ void sigint_fun(int signal_number){
 }
 
 void exit_fun() {
-    if(close(listening_socket_fd) == -1) {
+    if(close(socket_fd) == -1) {
         perror("blad przy zamykaniu socketu do nasluchiwania");
     }
     if(close(logging_socket_fd) == -1) {
@@ -428,10 +380,13 @@ int main(int argc, char ** argv) {
     // przygotowanie socketu do logowania
     setup_logger();
 
+    // inicjalizacja socketu
+    initialize_socket();
+
     // dolaczenie do pierscienia
     if(has_token == 0)
         join_the_ring();
 
     // nasluchiwanie na nowe polaczenia
-    listen_for_connection();
+    listen_for_messages();
 }

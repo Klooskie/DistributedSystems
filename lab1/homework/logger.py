@@ -1,7 +1,7 @@
 import socket
 
 ip = "224.0.0.2"
-port = 2222
+port = 22222
 
 # stworzenie socketa udp
 my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -13,7 +13,7 @@ my_socket.bind((ip, port))
 my_socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, socket.inet_aton(ip) + socket.inet_aton("0.0.0.0"))
 
 while 1:
-    data, addr = my_socket.recvfrom(50)
-    print("Od: " + str(addr) + " - Tresc: " + str(data.decode("utf-8")))
+    data, addr = my_socket.recvfrom(1000)
+    print("log: " + str(data.decode("utf-8")))
 
 
