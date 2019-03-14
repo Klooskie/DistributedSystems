@@ -87,7 +87,7 @@ void initialize_socket() {
     // wypelnienie adresu do nasluchiwania 
     struct sockaddr_in listening_address;
     listening_address.sin_family = AF_INET;
-    listening_address.sin_addr.s_addr = htonl(INADDR_ANY); //TODO
+    listening_address.sin_addr.s_addr = htonl(INADDR_ANY);
     listening_address.sin_port = listening_port; 
       
     // bindowanie socketa do adresu
@@ -141,7 +141,6 @@ void pass_token(token * message) {
         perror("blad przy wysylaniu wiadomosci");
         exit(1);
     }
-
 }
 
 void send_accept_token(string receiver_id) {
@@ -158,7 +157,7 @@ void send_accept_token(string receiver_id) {
     }
 }
 
-void send_new_token_without_data() {
+void send_token_without_data() {
     struct sockaddr_in neighbour_address = get_neighbour_address();
 
     // utworzenie pustej wiadomosci
@@ -172,7 +171,7 @@ void send_new_token_without_data() {
     }
 }
 
-void send_new_token_with_data() {
+void send_token_with_data() {
     struct sockaddr_in neighbour_address = get_neighbour_address();
 
     // utworzenie wiadomosci z trescia
@@ -190,7 +189,7 @@ void send_new_token_with_data() {
     data_to_send = 0;
 }
 
-void connect_with_new_client(struct sockaddr_in sender_address, token * message) {
+void connect_new_client_to_the_ring(struct sockaddr_in sender_address, token * message) {
     // utworzenie odpowiedzi zawierajacej ip i port na ktory dotychczas sie wysylalo
     token * response = (token *) malloc(sizeof(token));
     response -> type = RESPONSE_MESSAGE;
@@ -213,12 +212,12 @@ void connect_with_new_client(struct sockaddr_in sender_address, token * message)
         has_token = 2;
         sleep(2);
         send_log_message("wysylam poczatkowy pusty token");             
-        send_new_token_without_data();
+        send_token_without_data();
     }
 }
 
 void listen_for_messages() {
-    // nasluchiwanie na polaczenie w nieskonczonej petli
+    // nasluchiwanie na wiadomosci w nieskonczonej petli
     while(1) {
 
         token * message = (token *) malloc(sizeof(token));
@@ -231,7 +230,7 @@ void listen_for_messages() {
         }
         
         if(message -> type == JOIN_RING_MESSAGE) {
-            connect_with_new_client(sender_address, message);
+            connect_new_client_to_the_ring(sender_address, message);
         }
         if(message -> type == TOKEN_MESSAGE) {
             // przetrzymanie tokena przez sekunde
@@ -241,11 +240,11 @@ void listen_for_messages() {
                 // jesli token byl pusty to wysylamy dane jesli takie mamy lub pusty token
                 if(data_to_send == 1) {
                     send_log_message("otrzymalem pusty token, przesylam token z wiadomoscia");
-                    send_new_token_with_data();
+                    send_token_with_data();
                 }
                 else {
                     send_log_message("otrzymalem pusty token, przesylam pusty token");
-                    send_new_token_without_data();
+                    send_token_without_data();
                 }
             }
             else {
@@ -258,7 +257,7 @@ void listen_for_messages() {
                 else if(strcmp(message -> sender_id, client_id) == 0) {
                     printf("    NIE UDALO SIE DOSTARCZYC WIADOMOSCI DO: \'%s\' (%s)\n", message -> receiver_id, message -> message);
                     send_log_message("otrzymalem token ktory sam wyslalem (nie udalo sie dostarczyc wiadomosci), przesylam pusty token");
-                    send_new_token_without_data();
+                    send_token_without_data();
                 }
                 else {
                     send_log_message("otrzymalem zajety token nie zwiazany ze mna, przekazuje token dalej");                        
@@ -272,7 +271,7 @@ void listen_for_messages() {
             // jesli dostaniemy wiadomosc akceptujaca do nas to przekazujemy pusty token - zapobiega glodzeniu
             if(strcmp(message -> receiver_id, client_id) == 0) {
                 send_log_message("otrzymalem token akceptujacy odebranie mojej wiadomosci, przesylam pusty token");
-                send_new_token_without_data();             
+                send_token_without_data();             
             }
             else {
                 send_log_message("otrzymalem token akceptujacy nie zwiazany ze mna, przekazuje token dalej");             
@@ -285,10 +284,9 @@ void listen_for_messages() {
 void * chat_thread_fun(void * arg){
     sleep(3);
     while(1) {
-        printf("-----------------------------------------------\n");
         
         int n = 0;
-        printf("wpisz identyfikator odbiorcy\n");
+        printf("-----------------------------------------------\nwpisz identyfikator odbiorcy\n");
         while ((receiver_of_a_message[n++] = getchar()) != '\n');
         receiver_of_a_message[n-1] = '\0';
 

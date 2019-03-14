@@ -1,4 +1,5 @@
 import socket
+import time
 
 ip = "224.0.0.2"
 port = 22222
@@ -14,6 +15,6 @@ my_socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, socket.inet_at
 
 while 1:
     data, addr = my_socket.recvfrom(1000)
-    print("log: " + str(data.decode("utf-8")))
+    print(time.time(), "\t", str(data.decode("utf-8")))
 
 

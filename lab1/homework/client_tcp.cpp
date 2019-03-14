@@ -76,6 +76,27 @@ void send_log_message(string message) {
     }
 }
 
+void initialize_listening_socket() {
+    // utworzenie socketa do nasluchiwania
+    listening_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if(listening_socket_fd == -1) {
+        perror("blad przy tworzeniu socketu");
+        exit(1);
+    }
+
+    // wypelnienie adresu do nasluchiwania
+    struct sockaddr_in listening_address;
+    listening_address.sin_family = AF_INET;
+    listening_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    listening_address.sin_port = listening_port;
+
+    // bindowanie socketa do adresu
+    if(bind(listening_socket_fd, (struct sockaddr *) &listening_address, sizeof(listening_address)) != 0) {
+        perror("blad przy bindowaniu socketu do adresu");
+        exit(1);
+    }
+}
+
 int connect_to_neighbour() {
     // utworzenie socketa do polaczenia z sasiadem
     int neighbour_conection_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -163,7 +184,7 @@ void send_accept_token(string receiver_id) {
     close_connection_with_neighbour(neighbour_conection_socket_fd);
 }
 
-void send_new_token_without_data() {
+void send_token_without_data() {
     int neighbour_conection_socket_fd = connect_to_neighbour();
 
     // utworzenie pustej wiadomosci
@@ -178,7 +199,7 @@ void send_new_token_without_data() {
     close_connection_with_neighbour(neighbour_conection_socket_fd);
 }
 
-void send_new_token_with_data() {
+void send_token_with_data() {
     int neighbour_conection_socket_fd = connect_to_neighbour();
 
     // utworzenie wiadomosci z trescia
@@ -197,7 +218,7 @@ void send_new_token_with_data() {
     data_to_send = 0;
 }
 
-void connect_with_new_client(int connection_fd, token * message) {
+void connect_new_client_to_the_ring(int connection_fd, token * message) {
     // utworzenie odpowiedzi zawierajacej ip i port na ktory dotychczas sie wysylalo
     token * response = (token *) malloc(sizeof(token));
     response -> type = RESPONSE_MESSAGE;
@@ -220,7 +241,7 @@ void connect_with_new_client(int connection_fd, token * message) {
         has_token = 2;
         sleep(2);
         send_log_message("wysylam poczatkowy pusty token");             
-        send_new_token_without_data();
+        send_token_without_data();
     }
 }
 
@@ -232,7 +253,7 @@ void handle_new_connection(int connection_fd) {
     }
     
     if(message -> type == JOIN_RING_MESSAGE) {
-        connect_with_new_client(connection_fd, message);
+        connect_new_client_to_the_ring(connection_fd, message);
     }
     if(message -> type == TOKEN_MESSAGE) {
         // przetrzymanie tokena przez sekunde
@@ -242,11 +263,11 @@ void handle_new_connection(int connection_fd) {
             // jesli token byl pusty to wysylamy dane jesli takie mamy lub pusty token
             if(data_to_send == 1) {
                 send_log_message("otrzymalem pusty token, przesylam token z wiadomoscia");
-                send_new_token_with_data();
+                send_token_with_data();
             }
             else {
                 send_log_message("otrzymalem pusty token, przesylam pusty token");
-                send_new_token_without_data();
+                send_token_without_data();
             }
         }
         else {
@@ -259,7 +280,7 @@ void handle_new_connection(int connection_fd) {
             else if(strcmp(message -> sender_id, client_id) == 0) {
                 printf("    NIE UDALO SIE DOSTARCZYC WIADOMOSCI DO: \'%s\' (%s)\n", message -> receiver_id, message -> message);
                 send_log_message("otrzymalem token ktory sam wyslalem (nie udalo sie dostarczyc wiadomosci), przesylam pusty token");
-                send_new_token_without_data();
+                send_token_without_data();
             }
             else {
                 send_log_message("otrzymalem zajety token nie zwiazany ze mna, przekazuje token dalej");                        
@@ -273,36 +294,16 @@ void handle_new_connection(int connection_fd) {
         // jesli dostaniemy wiadomosc akceptujaca do nas to przekazujemy pusty token - zapobiega glodzeniu
         if(strcmp(message -> receiver_id, client_id) == 0) {
             send_log_message("otrzymalem token akceptujacy odebranie mojej wiadomosci, przesylam pusty token");
-            send_new_token_without_data();             
+            send_token_without_data();             
         }
         else {
             send_log_message("otrzymalem token akceptujacy nie zwiazany ze mna, przekazuje token dalej");             
             pass_token(message);
         }
     }
-
 }
 
 void listen_for_connection() {
-    // utworzenie socketa do nasluchiwania
-    listening_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listening_socket_fd == -1) {
-        perror("blad przy tworzeniu socketu");
-        exit(1);
-    }
-
-    // wypelnienie adresu do nasluchiwania
-    struct sockaddr_in listening_address;
-    listening_address.sin_family = AF_INET;
-    listening_address.sin_addr.s_addr = htonl(INADDR_ANY);
-    listening_address.sin_port = listening_port;
-
-    // bindowanie socketa do adresu
-    if(bind(listening_socket_fd, (struct sockaddr *) &listening_address, sizeof(listening_address)) != 0) {
-        perror("blad przy bindowaniu socketu do adresu");
-        exit(1);
-    }
-
     // nasluchiwanie na polaczenie w nieskonczonej petli
     while(1) {
         if(listen(listening_socket_fd, 5) != 0) {
@@ -333,10 +334,9 @@ void listen_for_connection() {
 void * chat_thread_fun(void * arg){
     sleep(3);
     while(1) {
-        printf("-----------------------------------------------\n");
-        
+
         int n = 0;
-        printf("wpisz identyfikator odbiorcy\n");
+        printf("-----------------------------------------------\nwpisz identyfikator odbiorcy\n");
         while ((receiver_of_a_message[n++] = getchar()) != '\n');
         receiver_of_a_message[n-1] = '\0';
 
@@ -427,6 +427,9 @@ int main(int argc, char ** argv) {
 
     // przygotowanie socketu do logowania
     setup_logger();
+
+    // inicjalizacja socketu do nasluchiwania
+    initialize_listening_socket();
 
     // dolaczenie do pierscienia
     if(has_token == 0)
