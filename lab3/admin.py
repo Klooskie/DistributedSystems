@@ -14,7 +14,7 @@ class Admin:
         self.listening_channel = self.listening_connection.channel()
 
         # stworzenie exchange do wysylania info
-        self.sending_channel.exchange_declare(exchange='admin_exchange',
+        self.sending_channel.exchange_declare(exchange='info_exchange',
                                               exchange_type='fanout',
                                               auto_delete=True)
 
@@ -40,7 +40,7 @@ class Admin:
 
     def broadcast_info(self, content):
         message = content
-        self.sending_channel.basic_publish(exchange='admin_exchange',
+        self.sending_channel.basic_publish(exchange='info_exchange',
                                            routing_key='',
                                            body=message)
 

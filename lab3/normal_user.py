@@ -9,13 +9,13 @@ class NormalUser:
         # stworzenie kanalu do odbierania info od admina
         self.info_channel = self.info_connection.channel()
         # stworzenie exchange w tym celu
-        self.info_channel.exchange_declare(exchange='admin_exchange',
+        self.info_channel.exchange_declare(exchange='info_exchange',
                                            exchange_type='fanout',
                                            auto_delete=True)
         # stworzenie i zbindowanie prywatnej kolejki
         result = self.info_channel.queue_declare('', auto_delete=True, exclusive=True)
         info_queue = result.method.queue
-        self.info_channel.queue_bind(exchange='admin_exchange',
+        self.info_channel.queue_bind(exchange='info_exchange',
                                      queue=info_queue,
                                      routing_key='')
         # subskrybcja na kolejce
