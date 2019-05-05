@@ -16,8 +16,6 @@ public class PremiumAccountStateHandlerI extends AccountStateHandlerI implements
     @Override
     public CalculateCreditCostResult calculateCreditCost(Currency currency, double value, Current current) {
 
-        //TODO bank nie obsluguje waluty
-
         CalculateCreditCostResult result;
 
         if(currency == Currency.PLN)

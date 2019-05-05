@@ -22,7 +22,6 @@ module Bank
     exception PeselUsedException extends GenericException {};
     exception PeselNotRegisteredException extends GenericException {};
     exception WrongPasswordException extends GenericException {};
-    exception NotSupportedCurrencyException extends GenericException {};
     exception NotEnoughMoneyException extends GenericException {};
 
 
