@@ -70,6 +70,9 @@ public class AccountsManagerI implements AccountsManager {
         this.accounts.add(newAccount);
         String password = generatePassword();
         this.authentication.put(pesel, password);
+
+        System.out.println("Created new account (" + pesel + ", " + password + ")");
+
         return new CreateAccountResult(password, newAccount.type);
     }
 
@@ -81,6 +84,8 @@ public class AccountsManagerI implements AccountsManager {
                 for (Account a : accounts)
                     if (a.pesel.equals(pesel))
                         account = a;
+
+                System.out.println("Granted access to account (" + pesel + ", " + current.ctx.get("password") + ")");
 
                 return account;
             } else {

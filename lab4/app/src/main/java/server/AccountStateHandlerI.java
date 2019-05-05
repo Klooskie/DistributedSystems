@@ -32,6 +32,8 @@ public class AccountStateHandlerI implements AccountStateHandler {
 
         //TODO bank nie obsluguje waluty
 
+        System.out.println("Transfer goten by user");
+
         this.accountState.balance += value;
     }
 
@@ -45,6 +47,8 @@ public class AccountStateHandlerI implements AccountStateHandler {
 
         if(value > this.accountState.balance)
             throw new NotEnoughMoneyException("you dont have enough money");
+
+        System.out.println("Transfer made by user");
 
         this.accountState.balance -= value;
     }

@@ -27,6 +27,8 @@ public class PremiumAccountStateHandlerI extends AccountStateHandlerI implements
             result = new CalculateCreditCostResult(pln_value, value * 2);
         }
 
+        System.out.println("Credit cost calculated for premium user");
+
         return result;
     }
 }

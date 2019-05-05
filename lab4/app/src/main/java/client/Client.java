@@ -31,14 +31,16 @@ public class Client {
 
         try (Communicator communicator = Util.initialize(args)) {
 
-            ObjectPrx base = communicator.stringToProxy("manager/AccountsManager:default -p 10000");
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Insert the bank's port");
+            Integer portNumber = Integer.parseInt(scanner.nextLine());
+            String proxyName = "manager/AccountsManager:default -p " + portNumber.toString();
+
+            ObjectPrx base = communicator.stringToProxy(proxyName);
             AccountsManagerPrx accountsManager = AccountsManagerPrx.checkedCast(base);
             if (accountsManager == null) {
                 throw new Error("Invalid proxy");
             }
-
-
-            Scanner scanner = new Scanner(System.in);
 
             while(true){
                 System.out.println("Choose operation: createAccount, checkAccountState, getTransfer, makeTransfer, calculateCreditCost");

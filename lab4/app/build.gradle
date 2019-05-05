@@ -14,4 +14,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.zeroc/ice
     compile group: 'com.zeroc', name: 'ice', version: '3.7.2'
 
+    compile 'io.grpc:grpc-netty-shaded:1.20.0'
+    compile 'io.grpc:grpc-protobuf:1.20.0'
+    compile 'io.grpc:grpc-stub:1.20.0'
+
+    compile 'com.google.protobuf:protobuf-java:3.6.1'
+
 }
