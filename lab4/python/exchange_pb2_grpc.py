@@ -15,7 +15,7 @@ class ExchangeStub(object):
       channel: A grpc.Channel.
     """
     self.subscribeToExchange = channel.unary_stream(
-        '/Exchange/subscribeToExchange',
+        '/calculator.Exchange/subscribeToExchange',
         request_serializer=exchange__pb2.CurrenciesList.SerializeToString,
         response_deserializer=exchange__pb2.CurrencyUpdate.FromString,
         )
@@ -42,5 +42,5 @@ def add_ExchangeServicer_to_server(servicer, server):
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
-      'Exchange', rpc_method_handlers)
+      'calculator.Exchange', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))

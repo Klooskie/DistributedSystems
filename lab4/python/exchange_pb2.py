@@ -18,15 +18,15 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='exchange.proto',
-  package='',
+  package='calculator',
   syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\x0e\x65xchange.proto\"/\n\x0e\x43urrenciesList\x12\x1d\n\ncurrencies\x18\x01 \x03(\x0e\x32\t.Currency\";\n\rCurrencyValue\x12\x1b\n\x08\x63urrency\x18\x01 \x01(\x0e\x32\t.Currency\x12\r\n\x05value\x18\x02 \x01(\x01\":\n\x0e\x43urrencyUpdate\x12(\n\x10newCurrencyValue\x18\x01 \x01(\x0b\x32\x0e.CurrencyValue*7\n\x08\x43urrency\x12\x07\n\x03PLN\x10\x00\x12\x07\n\x03\x45UR\x10\x01\x12\x07\n\x03USD\x10\x02\x12\x07\n\x03GBP\x10\x03\x12\x07\n\x03JPY\x10\x04\x32G\n\x08\x45xchange\x12;\n\x13subscribeToExchange\x12\x0f.CurrenciesList\x1a\x0f.CurrencyUpdate\"\x00\x30\x01\x62\x06proto3')
+  serialized_options=_b('\n\013sr.grpc.genB\017CalculatorProtoP\001\242\002\003HLW'),
+  serialized_pb=_b('\n\x0e\x65xchange.proto\x12\ncalculator\":\n\x0e\x43urrenciesList\x12(\n\ncurrencies\x18\x01 \x03(\x0e\x32\x14.calculator.Currency\"F\n\rCurrencyValue\x12&\n\x08\x63urrency\x18\x01 \x01(\x0e\x32\x14.calculator.Currency\x12\r\n\x05value\x18\x02 \x01(\x01\"E\n\x0e\x43urrencyUpdate\x12\x33\n\x10newCurrencyValue\x18\x01 \x01(\x0b\x32\x19.calculator.CurrencyValue*7\n\x08\x43urrency\x12\x07\n\x03PLN\x10\x00\x12\x07\n\x03\x45UR\x10\x01\x12\x07\n\x03USD\x10\x02\x12\x07\n\x03GBP\x10\x03\x12\x07\n\x03JPY\x10\x04\x32]\n\x08\x45xchange\x12Q\n\x13subscribeToExchange\x12\x1a.calculator.CurrenciesList\x1a\x1a.calculator.CurrencyUpdate\"\x00\x30\x01\x42&\n\x0bsr.grpc.genB\x0f\x43\x61lculatorProtoP\x01\xa2\x02\x03HLWb\x06proto3')
 )
 
 _CURRENCY = _descriptor.EnumDescriptor(
   name='Currency',
-  full_name='Currency',
+  full_name='calculator.Currency',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -53,8 +53,8 @@ _CURRENCY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=188,
-  serialized_end=243,
+  serialized_start=233,
+  serialized_end=288,
 )
 _sym_db.RegisterEnumDescriptor(_CURRENCY)
 
@@ -69,13 +69,13 @@ JPY = 4
 
 _CURRENCIESLIST = _descriptor.Descriptor(
   name='CurrenciesList',
-  full_name='CurrenciesList',
+  full_name='calculator.CurrenciesList',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='currencies', full_name='CurrenciesList.currencies', index=0,
+      name='currencies', full_name='calculator.CurrenciesList.currencies', index=0,
       number=1, type=14, cpp_type=8, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -93,27 +93,27 @@ _CURRENCIESLIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=18,
-  serialized_end=65,
+  serialized_start=30,
+  serialized_end=88,
 )
 
 
 _CURRENCYVALUE = _descriptor.Descriptor(
   name='CurrencyValue',
-  full_name='CurrencyValue',
+  full_name='calculator.CurrencyValue',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='currency', full_name='CurrencyValue.currency', index=0,
+      name='currency', full_name='calculator.CurrencyValue.currency', index=0,
       number=1, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='value', full_name='CurrencyValue.value', index=1,
+      name='value', full_name='calculator.CurrencyValue.value', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -131,20 +131,20 @@ _CURRENCYVALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=67,
-  serialized_end=126,
+  serialized_start=90,
+  serialized_end=160,
 )
 
 
 _CURRENCYUPDATE = _descriptor.Descriptor(
   name='CurrencyUpdate',
-  full_name='CurrencyUpdate',
+  full_name='calculator.CurrencyUpdate',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='newCurrencyValue', full_name='CurrencyUpdate.newCurrencyValue', index=0,
+      name='newCurrencyValue', full_name='calculator.CurrencyUpdate.newCurrencyValue', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -162,8 +162,8 @@ _CURRENCYUPDATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=128,
-  serialized_end=186,
+  serialized_start=162,
+  serialized_end=231,
 )
 
 _CURRENCIESLIST.fields_by_name['currencies'].enum_type = _CURRENCY
@@ -178,38 +178,39 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 CurrenciesList = _reflection.GeneratedProtocolMessageType('CurrenciesList', (_message.Message,), dict(
   DESCRIPTOR = _CURRENCIESLIST,
   __module__ = 'exchange_pb2'
-  # @@protoc_insertion_point(class_scope:CurrenciesList)
+  # @@protoc_insertion_point(class_scope:calculator.CurrenciesList)
   ))
 _sym_db.RegisterMessage(CurrenciesList)
 
 CurrencyValue = _reflection.GeneratedProtocolMessageType('CurrencyValue', (_message.Message,), dict(
   DESCRIPTOR = _CURRENCYVALUE,
   __module__ = 'exchange_pb2'
-  # @@protoc_insertion_point(class_scope:CurrencyValue)
+  # @@protoc_insertion_point(class_scope:calculator.CurrencyValue)
   ))
 _sym_db.RegisterMessage(CurrencyValue)
 
 CurrencyUpdate = _reflection.GeneratedProtocolMessageType('CurrencyUpdate', (_message.Message,), dict(
   DESCRIPTOR = _CURRENCYUPDATE,
   __module__ = 'exchange_pb2'
-  # @@protoc_insertion_point(class_scope:CurrencyUpdate)
+  # @@protoc_insertion_point(class_scope:calculator.CurrencyUpdate)
   ))
 _sym_db.RegisterMessage(CurrencyUpdate)
 
 
+DESCRIPTOR._options = None
 
 _EXCHANGE = _descriptor.ServiceDescriptor(
   name='Exchange',
-  full_name='Exchange',
+  full_name='calculator.Exchange',
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=245,
-  serialized_end=316,
+  serialized_start=290,
+  serialized_end=383,
   methods=[
   _descriptor.MethodDescriptor(
     name='subscribeToExchange',
-    full_name='Exchange.subscribeToExchange',
+    full_name='calculator.Exchange.subscribeToExchange',
     index=0,
     containing_service=None,
     input_type=_CURRENCIESLIST,
