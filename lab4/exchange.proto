@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+enum Currency
+{
+    PLN = 0;
+    EUR = 1;
+    USD = 2;
+    GBP = 3;
+    JPY = 4;
+}
+
+message CurrenciesList {
+    repeated Currency currencies = 1;
+}
+
+message CurrencyValue {
+    Currency currency = 1;
+    double value = 2;
+}
+
+message CurrencyUpdate {
+    CurrencyValue newCurrencyValue = 1;
+}
+
+service Exchange {
+    rpc subscribeToExchange (CurrenciesList) returns (stream CurrencyUpdate) {}
+}
