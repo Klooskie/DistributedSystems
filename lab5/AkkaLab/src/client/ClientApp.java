@@ -1,3 +1,5 @@
+package client;
+
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -11,15 +13,17 @@ public class ClientApp {
 
     public static void main(String[] args) throws Exception {
 
-        // config
+        // wczytanie konfigu
         File configFile = new File("remote_app.conf");
         Config config = ConfigFactory.parseFile(configFile);
 
-        // create actor system & actors
+        // utworzenie systemu aktorow
         final ActorSystem system = ActorSystem.create("client_system", config);
+
+        // utworzenie aktora
         final ActorRef client = system.actorOf(Props.create(ClientActor.class), "client");
 
-        // interaction
+        // wczytywanie z konsoli i przesyłanie wiadomosci do aktora
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
             String line = br.readLine();
@@ -29,6 +33,7 @@ public class ClientApp {
             client.tell(line, null);
         }
 
+        // zamkniecie systemu aktorow
         system.terminate();
     }
 }

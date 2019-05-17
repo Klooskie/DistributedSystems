@@ -1,3 +1,5 @@
+package bookshop;
+
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -18,11 +20,10 @@ public class BookshopApp {
         // utworzenie systemu aktorow
         final ActorSystem system = ActorSystem.create("bookshop_system", config);
 
-
         // utworzenie aktora
         final ActorRef bookshop = system.actorOf(Props.create(BookshopActor.class), "bookshop");
 
-        // zamkniecie po przeczytaniu z terminala dowolnego stringa
+        // zamkniecie systemu aktorow po przeczytaniu z terminala dowolnego stringa
         (new BufferedReader(new InputStreamReader(System.in))).readLine();
         system.terminate();
     }
