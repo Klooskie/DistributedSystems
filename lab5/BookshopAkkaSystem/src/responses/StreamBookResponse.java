@@ -1,4 +1,6 @@
 package responses;
 
-public class StreamBookResponse {
+import java.io.Serializable;
+
+public class StreamBookResponse implements Serializable {
 }

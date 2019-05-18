@@ -2,15 +2,10 @@ package requests;
 
 import java.io.Serializable;
 
-public class CheckBookPriceRequest implements Serializable {
-
-    private String bookTitle;
+public class CheckBookPriceRequest extends Request implements Serializable {
 
     public CheckBookPriceRequest(String bookTitle) {
-        this.bookTitle = bookTitle;
+        super(bookTitle);
     }
 
-    public String getBookTitle() {
-        return bookTitle;
-    }
 }

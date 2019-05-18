@@ -5,6 +5,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -21,7 +22,19 @@ public class BookshopApp {
         final ActorSystem system = ActorSystem.create("bookshop_system", config);
 
         // utworzenie aktora
-        final ActorRef bookshop = system.actorOf(Props.create(BookshopActor.class), "bookshop");
+        String firstBooksDatabasePath = "";
+        String secondBooksDatabasePath = "";
+        String ordersDatabasePath = "";
+        String booksDirectoryPath = "";
+        system.actorOf(
+                Props.create(
+                        BookshopActor.class,
+                        firstBooksDatabasePath,
+                        secondBooksDatabasePath,
+                        ordersDatabasePath,
+                        booksDirectoryPath
+                ),
+                "bookshop");
 
         // zamkniecie systemu aktorow po przeczytaniu z terminala dowolnego stringa
         (new BufferedReader(new InputStreamReader(System.in))).readLine();

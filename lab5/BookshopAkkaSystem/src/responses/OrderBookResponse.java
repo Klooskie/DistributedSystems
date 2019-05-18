@@ -1,4 +1,6 @@
 package responses;
 
-public class OrderBookResponse {
+import java.io.Serializable;
+
+public class OrderBookResponse implements Serializable {
 }
