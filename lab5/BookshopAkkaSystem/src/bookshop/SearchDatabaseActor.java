@@ -6,6 +6,9 @@ import akka.event.LoggingAdapter;
 import requests.CheckBookPriceRequest;
 import responses.CheckBookPriceResponse;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+
 public class SearchDatabaseActor extends AbstractActor {
 
     private String databasePath;
@@ -20,9 +23,10 @@ public class SearchDatabaseActor extends AbstractActor {
         return receiveBuilder()
                 .match(CheckBookPriceRequest.class, checkBookPriceRequest -> {
 
-                    log.info("got checkBookPriceRequest " + checkBookPriceRequest.getBookTitle() + "to search for it in base");
+                    log.info("got checkBookPriceRequest " + checkBookPriceRequest.getBookTitle() + " to search for it in base");
 
-
+                    BufferedReader baseReader = new BufferedReader(new FileReader(databasePath));
+                    System.out.println(baseReader.readLine());
 
                     sender().tell(new CheckBookPriceResponse(checkBookPriceRequest.getBookTitle(), true, 12), getSelf());
 

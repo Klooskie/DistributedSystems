@@ -21,7 +21,7 @@ public class ClientApp {
         final ActorSystem system = ActorSystem.create("client_system", config);
 
         // utworzenie aktora
-        String bookshopPath = "akka.tcp://bookshop_system@127.0.0.1:8002/user/bookshop";
+        String bookshopPath = "akka.tcp://bookshop_system@127.0.0.1:33002/user/bookshop";
         final ActorRef client = system.actorOf(Props.create(ClientActor.class, bookshopPath), "client");
 
         // wczytywanie z konsoli i przesyłanie wiadomosci do aktora

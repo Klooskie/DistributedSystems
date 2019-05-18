@@ -18,14 +18,13 @@ public class CheckBookPriceActor extends AbstractActor {
 
     private ActorRef firstDatabaseSearchActor;
     private ActorRef secondDatabaseSearchActor;
-    private int databasesSearched;
-
+    private int databasesSearched = 0;
+    private boolean responseSent = false;
 
     public CheckBookPriceActor(ActorRef clientActor, String firstBooksDatabasePath, String secondBooksDatabasePath) {
         this.clientActor = clientActor;
         this.firstBooksDatabasePath = firstBooksDatabasePath;
         this.secondBooksDatabasePath = secondBooksDatabasePath;
-        this.databasesSearched = 0;
     }
 
     @Override
@@ -55,20 +54,15 @@ public class CheckBookPriceActor extends AbstractActor {
 
                     this.databasesSearched++;
 
-                    if(this.databasesSearched == 2 || checkBookPriceResponse.isBookFound()) {
+                    if((this.databasesSearched == 2 && !this.responseSent) || (checkBookPriceResponse.isBookFound() && !this.responseSent)) {
                         this.clientActor.tell(checkBookPriceResponse, getSelf());
-                        //TODO pozabijaj podwladnych i siebie
-//                        this.firstDatabaseSearchActor.tell(PoisonPill.getInstance(), getSelf());
-//                        this.secondDatabaseSearchActor.tell(PoisonPill.getInstance(), getSelf());
-//                        getSelf().tell(PoisonPill.getInstance(), getSelf());
+                        this.responseSent = true;
+
+                        // pozabijaj podwladnych i siebie
+                        this.firstDatabaseSearchActor.tell(PoisonPill.getInstance(), getSelf());
+                        this.secondDatabaseSearchActor.tell(PoisonPill.getInstance(), getSelf());
+                        getSelf().tell(PoisonPill.getInstance(), getSelf());
                     }
-
-//                    this.clientActor.tell(checkBookPriceResponse, getSelf());
-
-                    //TODO pozabijaj podwladnych i siebie
-//                    this.firstDatabaseSearchActor.tell(PoisonPill.getInstance(), getSelf());
-//                    this.secondDatabaseSearchActor.tell(PoisonPill.getInstance(), getSelf());
-//                    getSelf().tell(PoisonPill.getInstance(), getSelf());
 
                 })
                 .matchAny(o -> log.info("Received unknown message"))

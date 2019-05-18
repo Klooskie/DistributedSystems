@@ -22,8 +22,8 @@ public class BookshopApp {
         final ActorSystem system = ActorSystem.create("bookshop_system", config);
 
         // utworzenie aktora
-        String firstBooksDatabasePath = "";
-        String secondBooksDatabasePath = "";
+        String firstBooksDatabasePath = "resources/first_database.txt";
+        String secondBooksDatabasePath = "resources/second_database.txt";
         String ordersDatabasePath = "";
         String booksDirectoryPath = "";
         system.actorOf(
