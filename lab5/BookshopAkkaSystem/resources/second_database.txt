@@ -1,1 +1,7 @@
-dududududuuuuupa
+book1 | 12.32
+book2 | 13.42
+book3 | 12341.2
+book4 | 75.23
+book5 | 100.23
+
+book6 | 123

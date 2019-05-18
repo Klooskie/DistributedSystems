@@ -8,6 +8,8 @@ import responses.CheckBookPriceResponse;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.util.regex.Pattern;
 
 public class SearchDatabaseActor extends AbstractActor {
 
@@ -18,18 +20,40 @@ public class SearchDatabaseActor extends AbstractActor {
         this.databasePath = databasePath;
     }
 
+    private double searchDatabase(String bookTitle) throws IOException {
+
+        BufferedReader databaseReader = new BufferedReader(new FileReader(databasePath));
+        String line = databaseReader.readLine();
+        double bookPrice = -1;
+
+        while(line != null) {
+
+            String[] splitedLine = line.split(Pattern.quote("|"));
+            String title = splitedLine[0].trim();
+
+            if(title.equals(bookTitle)) {
+                bookPrice = Double.parseDouble(splitedLine[1].trim());
+                break;
+            }
+
+            line = databaseReader.readLine();
+        }
+
+        return bookPrice;
+    }
+
     @Override
     public AbstractActor.Receive createReceive() {
         return receiveBuilder()
                 .match(CheckBookPriceRequest.class, checkBookPriceRequest -> {
 
                     log.info("got checkBookPriceRequest " + checkBookPriceRequest.getBookTitle() + " to search for it in base");
+                    double bookPrice = searchDatabase(checkBookPriceRequest.getBookTitle());
 
-                    BufferedReader baseReader = new BufferedReader(new FileReader(databasePath));
-                    System.out.println(baseReader.readLine());
-
-                    sender().tell(new CheckBookPriceResponse(checkBookPriceRequest.getBookTitle(), true, 12), getSelf());
-
+                    if(bookPrice == -1)
+                        sender().tell(new CheckBookPriceResponse(checkBookPriceRequest.getBookTitle(), false, -1), getSelf());
+                    else
+                        sender().tell(new CheckBookPriceResponse(checkBookPriceRequest.getBookTitle(), true, bookPrice), getSelf());
 
                 })
                 .matchAny(o -> log.info("Received unknown message"))
