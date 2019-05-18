@@ -14,7 +14,7 @@ public class ClientApp {
     public static void main(String[] args) throws Exception {
 
         // wczytanie konfigu
-        File configFile = new File("remote_app.conf");
+        File configFile = new File("client.conf");
         Config config = ConfigFactory.parseFile(configFile);
 
         // utworzenie systemu aktorow
@@ -26,6 +26,7 @@ public class ClientApp {
         // wczytywanie z konsoli i przesyłanie wiadomosci do aktora
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
+            System.out.println("Usage: price book_title | order book_title | stream book_title");
             String line = br.readLine();
             if (line.equals("q")) {
                 break;

@@ -14,7 +14,7 @@ public class BookshopApp {
     public static void main(String[] args) throws Exception {
 
         // wczytanie konfigu
-        File configFile = new File("remote_app2.conf");
+        File configFile = new File("bookshop.conf");
         Config config = ConfigFactory.parseFile(configFile);
 
         // utworzenie systemu aktorow

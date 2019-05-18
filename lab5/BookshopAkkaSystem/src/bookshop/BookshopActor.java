@@ -16,6 +16,7 @@ public class BookshopActor extends AbstractActor {
         return receiveBuilder()
                 .match(CheckBookPriceRequest.class, checkBookPriceRequest -> {
                     log.info("checkBookPriceRequest");
+                    log.info(checkBookPriceRequest.getBookTitle());
                 })
                 .match(OrderBookRequest.class, orderBookRequest -> {
                     log.info("orderBookRequest");
