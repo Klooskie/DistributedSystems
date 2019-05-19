@@ -54,10 +54,16 @@ public class ClientActor extends AbstractActor {
 
                 })
                 .match(OrderBookResponse.class, orderBookResponse -> {
-                    log.info("OrderBookResponse yay");
+                    log.info("Got OrderBookResponse");
+                    if(orderBookResponse.isOrderedProperly())
+                        System.out.println("The book has been ordered properly");
+                    else
+                        System.out.println("No order has been made");
                 })
                 .match(StreamBookResponse.class, streamBookResponse -> {
                     log.info("StreamBookResponse yay");
+
+
                 })
                 .matchAny(o -> log.info("Received unknown message"))
                 .build();

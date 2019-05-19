@@ -14,6 +14,7 @@ public class CheckBookPriceActor extends AbstractActor {
     private ActorRef clientActor;
     private String firstBooksDatabasePath;
     private String secondBooksDatabasePath;
+
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
     private ActorRef firstDatabaseSearchActor;
@@ -68,4 +69,6 @@ public class CheckBookPriceActor extends AbstractActor {
                 .matchAny(o -> log.info("Received unknown message"))
                 .build();
     }
+
+    // TODO supervising strategy!!!!!!!!!!!!!!!
 }

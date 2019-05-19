@@ -28,11 +28,11 @@ public class SearchDatabaseActor extends AbstractActor {
 
         while(line != null) {
 
-            String[] splitedLine = line.split(Pattern.quote("|"));
-            String title = splitedLine[0].trim();
+            String[] splitLine = line.split(Pattern.quote("|"));
+            String title = splitLine[0].trim();
 
             if(title.equals(bookTitle)) {
-                bookPrice = Double.parseDouble(splitedLine[1].trim());
+                bookPrice = Double.parseDouble(splitLine[1].trim());
                 break;
             }
 

@@ -24,8 +24,8 @@ public class BookshopApp {
         // utworzenie aktora
         String firstBooksDatabasePath = "resources/first_database.txt";
         String secondBooksDatabasePath = "resources/second_database.txt";
-        String ordersDatabasePath = "";
-        String booksDirectoryPath = "";
+        String ordersDatabasePath = "resources/orders.txt";
+        String booksDirectoryPath = "resources/books/";
         system.actorOf(
                 Props.create(
                         BookshopActor.class,

@@ -25,9 +25,9 @@ public class ClientApp {
         final ActorRef client = system.actorOf(Props.create(ClientActor.class, bookshopPath), "client");
 
         // wczytywanie z konsoli i przesyłanie wiadomosci do aktora
+        System.out.println("Usage: price book_title | order book_title | stream book_title");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
-            System.out.println("Usage: price book_title | order book_title | stream book_title");
             String line = br.readLine();
             if (line.equals("q")) {
                 break;
