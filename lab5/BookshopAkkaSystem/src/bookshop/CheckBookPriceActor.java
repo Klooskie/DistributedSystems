@@ -79,10 +79,13 @@ public class CheckBookPriceActor extends AbstractActor {
         return new OneForOneStrategy(10, Duration.create(1, "minute"),
                 DeciderBuilder
                         .match(FileNotFoundException.class, e -> {
-                            getSelf().tell(new CheckBookPriceResponse("", false, -1), getSelf());
+                            getSelf().tell(new CheckBookPriceResponse(false, -1), getSelf());
                             return SupervisorStrategy.resume();
                         })
-                        .matchAny(o -> restart())
+                        .matchAny(o -> {
+                            getSelf().tell(new CheckBookPriceResponse(false, -1), getSelf());
+                            return SupervisorStrategy.resume();
+                        })
                         .build()
         );
     }

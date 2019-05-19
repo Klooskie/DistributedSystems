@@ -52,9 +52,9 @@ public class SearchDatabaseActor extends AbstractActor {
                     double bookPrice = searchDatabase(checkBookPriceRequest.getBookTitle());
 
                     if(bookPrice == -1)
-                        sender().tell(new CheckBookPriceResponse(checkBookPriceRequest.getBookTitle(), false, -1), getSelf());
+                        sender().tell(new CheckBookPriceResponse(false, -1), getSelf());
                     else
-                        sender().tell(new CheckBookPriceResponse(checkBookPriceRequest.getBookTitle(), true, bookPrice), getSelf());
+                        sender().tell(new CheckBookPriceResponse(true, bookPrice), getSelf());
 
                 })
                 .matchAny(o -> log.info("Received unknown message"))

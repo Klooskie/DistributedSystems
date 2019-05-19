@@ -83,16 +83,6 @@ public class BookshopActor extends AbstractActor {
     }
 
     //TODO SUPERVISING
-//    private static SupervisorStrategy strategy
-//            = new AllForOneStrategy(10, Duration.create("1 minute"), DeciderBuilder.
-//            match(ArithmeticException.class, e -> resume()).
-//            matchAny(o -> restart()).
-//            build());
-//
-//    @Override
-//    public SupervisorStrategy supervisorStrategy() {
-//        return strategy;
-//    }
 
     @Override
     public SupervisorStrategy supervisorStrategy() {
