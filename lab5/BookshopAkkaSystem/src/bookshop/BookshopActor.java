@@ -7,10 +7,8 @@ import akka.japi.pf.DeciderBuilder;
 import requests.CheckBookPriceRequest;
 import requests.OrderBookRequest;
 import requests.StreamBookRequest;
-import responses.CheckBookPriceResponse;
 import scala.concurrent.duration.Duration;
 
-import java.io.FileNotFoundException;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
