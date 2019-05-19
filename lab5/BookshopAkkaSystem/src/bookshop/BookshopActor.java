@@ -82,8 +82,6 @@ public class BookshopActor extends AbstractActor {
                 .build();
     }
 
-    //TODO SUPERVISING
-
     @Override
     public SupervisorStrategy supervisorStrategy() {
         return new OneForOneStrategy(10, Duration.create(1, "minute"),
