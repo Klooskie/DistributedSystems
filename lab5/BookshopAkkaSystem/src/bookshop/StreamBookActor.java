@@ -1,58 +1,73 @@
 package bookshop;
 
+import akka.NotUsed;
+import akka.stream.IOResult;
+import akka.util.ByteString;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
-import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import requests.CheckBookPriceRequest;
-import requests.OrderBookRequest;
-import responses.CheckBookPriceResponse;
-import responses.OrderBookResponse;
+import akka.stream.ActorMaterializer;
+import akka.stream.Materializer;
+import akka.stream.ThrottleMode;
+import akka.stream.javadsl.*;
+import requests.StreamBookRequest;
+import responses.StreamBookResponse;
+import scala.concurrent.duration.Duration;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.util.concurrent.Semaphore;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.CompletionStage;
+
 
 public class StreamBookActor extends AbstractActor {
 
     private ActorRef clientActor;
-    private String ordersDatabasePath;
-    private Semaphore ordersDatabaseSemaphore;
+    private String booksDirectoryPath;
 
     private final LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
 
-    public StreamBookActor(ActorRef clientActor, String ordersDatabasePath, Semaphore ordersDatabaseSemaphore) {
+    public StreamBookActor(ActorRef clientActor, String booksDirectoryPath) {
         this.clientActor = clientActor;
-        this.ordersDatabasePath = ordersDatabasePath;
-        this.ordersDatabaseSemaphore = ordersDatabaseSemaphore;
+        this.booksDirectoryPath = booksDirectoryPath;
     }
 
     @Override
     public AbstractActor.Receive createReceive() {
         return receiveBuilder()
-                .match(OrderBookRequest.class, orderBookRequest -> {
-                    log.info("got orderBookRequest " + orderBookRequest.getBookTitle() + " to write it to orders db");
+                .match(StreamBookRequest.class, streamBookRequest -> {
+                    log.info("got orderBookRequest " + streamBookRequest.getBookTitle() + " to stream it");
 
-                    this.ordersDatabaseSemaphore.acquire();
+                    Path requestedBookPath = Paths.get(this.booksDirectoryPath + streamBookRequest.getBookTitle());
 
-                    try {
+                    if(Files.isRegularFile(requestedBookPath)) {
 
-                        BufferedWriter databaseWriter = new BufferedWriter(new FileWriter(ordersDatabasePath, true));
-                        databaseWriter.write(orderBookRequest.getBookTitle() + "\n");
-                        databaseWriter.close();
+                        final Materializer materializer = ActorMaterializer.create(context().system());
+                        final Source<ByteString, CompletionStage<IOResult>> bookSource = FileIO.fromPath(requestedBookPath);
+                        final Flow<ByteString, ByteString, NotUsed> getBookLines = Framing.delimiter(ByteString.fromString("\n"), 10000, FramingTruncation.ALLOW);
+
+                        bookSource
+                                .via(getBookLines)
+                                .map(ByteString::utf8String)
+                                .map(line -> new StreamBookResponse(line, false, true))
+                                .concat(Source.single(new StreamBookResponse("", true, true)))
+                                .throttle(1, Duration.create(1, "seconds"), 1, ThrottleMode.shaping())
+                                .runWith(Sink.foreach(response -> clientActor.tell(response, getSelf())), materializer);
+
+                        log.info("Completed streaming " + streamBookRequest.getBookTitle() + " killing myself");
+                        getSelf().tell(PoisonPill.getInstance(), getSelf());
 
                     }
-                    catch (Exception e) {
-                        throw e;
-                    }
-                    finally {
-                        this.ordersDatabaseSemaphore.release();
-                    }
+                    else {
 
-                    this.clientActor.tell(new OrderBookResponse(true), getSelf());
-                    getSelf().tell(PoisonPill.getInstance(), getSelf());
+                        log.info("Requested book does not exist, killing myself");
+                        clientActor.tell(new StreamBookResponse("", true, false), getSelf());
+                        getSelf().tell(PoisonPill.getInstance(), getSelf());
+
+                    }
 
                 })
                 .matchAny(o -> log.info("Received unknown message"))

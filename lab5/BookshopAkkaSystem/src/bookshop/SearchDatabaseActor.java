@@ -39,6 +39,7 @@ public class SearchDatabaseActor extends AbstractActor {
             line = databaseReader.readLine();
         }
 
+        databaseReader.close();
         return bookPrice;
     }
 

@@ -61,8 +61,15 @@ public class ClientActor extends AbstractActor {
                         System.out.println("No order has been made");
                 })
                 .match(StreamBookResponse.class, streamBookResponse -> {
-                    log.info("StreamBookResponse yay");
+                    log.info("Got StreamBookResponse");
 
+                    if(!streamBookResponse.isBookFound())
+                        System.out.println("Requested book was not found");
+                    else
+                        if(!streamBookResponse.isLast())
+                            System.out.println(streamBookResponse.getLine());
+                        else
+                            System.out.println("<><><><><><><>Stream completed<><><><><><><>");
 
                 })
                 .matchAny(o -> log.info("Received unknown message"))

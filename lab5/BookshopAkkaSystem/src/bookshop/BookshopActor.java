@@ -68,8 +68,7 @@ public class BookshopActor extends AbstractActor {
                             Props.create(
                                     StreamBookActor.class,
                                     context().sender(),
-                                    this.ordersDatabasePath,
-                                    this.ordersDatabaseSemaphore
+                                    this.booksDirectoryPath
                             ),
                             actorName)
                             .tell(streamBookRequest, getSelf());
