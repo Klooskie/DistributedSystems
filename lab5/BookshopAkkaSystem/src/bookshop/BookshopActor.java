@@ -66,7 +66,7 @@ public class BookshopActor extends AbstractActor {
                             .tell(orderBookRequest, getSelf());
                 })
                 .match(StreamBookRequest.class, streamBookRequest -> {
-                    System.out.println("got streamBookRequest " + streamBookRequest.getBookTitle());
+                    log.info("got streamBookRequest " + streamBookRequest.getBookTitle());
 
                     String actorName = "stream_book_actor_" + UUID.randomUUID().toString();
                     context().actorOf(

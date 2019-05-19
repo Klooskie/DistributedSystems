@@ -20,22 +20,20 @@ public class ClientApp {
         int portNumber = Integer.parseInt(br.readLine());
 
         // wczytanie konfigu
-        File configFile = new File("client.conf");
-//        Config config = ConfigFactory.parseFile(configFile);
         Config config = ConfigFactory.parseString(String.format(
                 "akka {\n" +
-                        "  actor {\n" +
-                        "    provider = remote\n" +
-                        "    warn-about-java-serializer-usage = false\n" +
-                        "  }\n" +
-                        "  remote {\n" +
-                        "    enabled-transports = [\"akka.remote.netty.tcp\"]\n" +
-                        "    netty.tcp {\n" +
-                        "      hostname = \"127.0.0.1\"\n" +
-                        "      port = %d\n" +
-                        "    }\n" +
-                        "  }\n" +
-                        "}", portNumber));
+                "  actor {\n" +
+                "    provider = remote\n" +
+                "    warn-about-java-serializer-usage = false\n" +
+                "  }\n" +
+                "  remote {\n" +
+                "    enabled-transports = [\"akka.remote.netty.tcp\"]\n" +
+                "    netty.tcp {\n" +
+                "      hostname = \"127.0.0.1\"\n" +
+                "      port = %d\n" +
+                "    }\n" +
+                "  }\n" +
+                "}", portNumber));
 
         // utworzenie systemu aktorow
         final ActorSystem system = ActorSystem.create("client_system_" + portNumber, config);

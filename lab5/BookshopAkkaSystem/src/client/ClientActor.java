@@ -42,6 +42,9 @@ public class ClientActor extends AbstractActor {
 
                         log.info("Sent StreamBookRequest");
                     } else {
+
+                        System.out.println("Wrong request, usage: price book_title | order book_title | stream book_title");
+
                         log.info("Received wrong request");
                     }
                 })
@@ -56,9 +59,9 @@ public class ClientActor extends AbstractActor {
                 .match(OrderBookResponse.class, orderBookResponse -> {
                     log.info("Got OrderBookResponse");
                     if(orderBookResponse.isOrderedProperly())
-                        System.out.println("The book has been ordered properly");
+                        System.out.println("The order has been made");
                     else
-                        System.out.println("No order has been made");
+                        System.out.println("No order has been made - orders database is down");
                 })
                 .match(StreamBookResponse.class, streamBookResponse -> {
                     log.info("Got StreamBookResponse");
