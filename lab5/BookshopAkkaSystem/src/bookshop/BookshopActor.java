@@ -1,15 +1,20 @@
 package bookshop;
 
-import akka.actor.AbstractActor;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import akka.japi.pf.DeciderBuilder;
 import requests.CheckBookPriceRequest;
 import requests.OrderBookRequest;
 import requests.StreamBookRequest;
+import responses.CheckBookPriceResponse;
+import scala.concurrent.duration.Duration;
 
+import java.io.FileNotFoundException;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
+
+import static akka.actor.SupervisorStrategy.*;
 
 public class BookshopActor extends AbstractActor {
 
@@ -78,4 +83,23 @@ public class BookshopActor extends AbstractActor {
     }
 
     //TODO SUPERVISING
+//    private static SupervisorStrategy strategy
+//            = new AllForOneStrategy(10, Duration.create("1 minute"), DeciderBuilder.
+//            match(ArithmeticException.class, e -> resume()).
+//            matchAny(o -> restart()).
+//            build());
+//
+//    @Override
+//    public SupervisorStrategy supervisorStrategy() {
+//        return strategy;
+//    }
+
+    @Override
+    public SupervisorStrategy supervisorStrategy() {
+        return new OneForOneStrategy(10, Duration.create(1, "minute"),
+                DeciderBuilder
+                        .matchAny(o -> stop())
+                        .build()
+        );
+    }
 }

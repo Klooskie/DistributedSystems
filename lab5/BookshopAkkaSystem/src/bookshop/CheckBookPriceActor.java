@@ -1,13 +1,16 @@
 package bookshop;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.PoisonPill;
-import akka.actor.Props;
+import akka.actor.*;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import akka.japi.pf.DeciderBuilder;
 import requests.CheckBookPriceRequest;
 import responses.CheckBookPriceResponse;
+import scala.concurrent.duration.Duration;
+
+import java.io.FileNotFoundException;
+
+import static akka.actor.SupervisorStrategy.*;
 
 public class CheckBookPriceActor extends AbstractActor {
 
@@ -55,7 +58,7 @@ public class CheckBookPriceActor extends AbstractActor {
 
                     this.databasesSearched++;
 
-                    if((this.databasesSearched == 2 && !this.responseSent) || (checkBookPriceResponse.isBookFound() && !this.responseSent)) {
+                    if ((this.databasesSearched == 2 && !this.responseSent) || (checkBookPriceResponse.isBookFound() && !this.responseSent)) {
                         this.clientActor.tell(checkBookPriceResponse, getSelf());
                         this.responseSent = true;
 
@@ -70,5 +73,17 @@ public class CheckBookPriceActor extends AbstractActor {
                 .build();
     }
 
-    // TODO supervising strategy!!!!!!!!!!!!!!!
+
+    @Override
+    public SupervisorStrategy supervisorStrategy() {
+        return new OneForOneStrategy(10, Duration.create(1, "minute"),
+                DeciderBuilder
+                        .match(FileNotFoundException.class, e -> {
+                            getSelf().tell(new CheckBookPriceResponse("", false, -1), getSelf());
+                            return SupervisorStrategy.resume();
+                        })
+                        .matchAny(o -> restart())
+                        .build()
+        );
+    }
 }
