@@ -36,13 +36,21 @@ public class OrderBookActor extends AbstractActor {
 
                     if(Files.isRegularFile(Paths.get(this.ordersDatabasePath))) {
 
-                        this.ordersDatabaseSemaphore.acquire();
+                        try {
+                            this.ordersDatabaseSemaphore.acquire();
+                        } catch (InterruptedException e) {
+                            throw e;
+                        }
 
-                        BufferedWriter databaseWriter = new BufferedWriter(new FileWriter(ordersDatabasePath, true));
-                        databaseWriter.write(orderBookRequest.getBookTitle() + "\n");
-                        databaseWriter.close();
-
-                        this.ordersDatabaseSemaphore.release();
+                        try {
+                            BufferedWriter databaseWriter = new BufferedWriter(new FileWriter(ordersDatabasePath, true));
+                            databaseWriter.write(orderBookRequest.getBookTitle() + "\n");
+                            databaseWriter.close();
+                        } catch (Exception e) {
+                            throw e;
+                        } finally {
+                            this.ordersDatabaseSemaphore.release();
+                        }
 
                         log.info("placed order for " + orderBookRequest.getBookTitle() + " in order database properly, killing myself");
                         this.clientActor.tell(new OrderBookResponse(true), getSelf());
