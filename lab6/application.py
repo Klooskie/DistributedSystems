@@ -37,6 +37,7 @@ def watch_children(children):
 # Watches changes of /z node itself
 def watch_node(data, stat):
     global z_already_exists
+    global zk
 
     if not stat and z_already_exists: 
         # when /z ig getting closed - kill the app
@@ -51,8 +52,10 @@ def watch_node(data, stat):
         zk.ChildrenWatch("/z", watch_children)
         z_already_exists = True
 
-# Visualizes tree of nodes being /z node's children
+# Visualizes tree of nodes that are /z node's children
 def visualize_z_tree(depth=0, node="/z"):
+    global zk
+    
     if zk.exists(node):
         if depth > 0:
             print((depth - 1) * 2 * ' ' + u'\u2ba1', node.split('/')[-1])
